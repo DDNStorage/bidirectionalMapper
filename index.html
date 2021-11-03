@@ -181,12 +181,13 @@
                 bMatches: [],
                 rmBin: false
             },
-            created() {
+            mounted() {
                 this.getData()
             },
             methods: {
                 // Pull all the data - at app creation and refresh stale data
                 async getData() {
+                    console.log(`getData() called...`)
                     let linkDataRaw = await fetch("/get/links")
                     this.links = await linkDataRaw.json()
 
@@ -210,6 +211,7 @@
                         if (resultJson.result == 'success') {
                             this.getData() // Reload the data
                         } else {
+                            console.error(`Error: ${resultJson.msg}`)
                             alert(`Error: ${resultJson.msg}`)
                         }
                     } else {
@@ -220,10 +222,12 @@
                     let resultRaw = await fetch(`/remove/link/${a}/${b}`)
                     let resultJson = await resultRaw.json()
                     // Make sure the call worked
-                    if (resultJson.result !== 'success') {
+                    console.log(resultJson)
+                    if (resultJson.result == 'success') {
                         this.getData() // Reload the data
                     } else {
-                        alert(`Not successful: ${result}`)
+                        console.error(`removeLink ERROR: ${resultJson.msg}`)
+                        alert(`Not successful: ${resultJson.msg}`)
                     }
                 },
                 async add() { // Add an element in the database
@@ -234,10 +238,11 @@
                     if (val.length && bin) {
                         let resultRaw = await fetch(`/add/bin/${bin}/${val}`)
                         let resultJson = await resultRaw.json()
-                        if (resultJson.result !== 'success') {
+                        if (resultJson.result == 'success') {
                             this.getData() // Reload the data
                         } else {
-                            alert(`Not successful: ${result}`)
+                            console.error(`Not successful: ${resultJson.msg}`)
+                            alert(`Not successful: ${resultJson.msg}`)
                         }
                     } else { // Missing value OR missing bin
                         if (!val) {
@@ -258,6 +263,7 @@
                     } else if (bin == 'B') {
                         elem = document.getElementById('delB')
                         id = elem.value
+                        id = elem.value
                     } else { // Invalid Bin
                         elem = false
                         id = false
@@ -266,11 +272,12 @@
                     if (id && bin) {
                         let resultRaw = await fetch(`/remove/bin/${bin}/${id}`)
                         let resultJson = await resultRaw.json()
-                        if (resultJson.result !== 'success') {
+                        console.log(resultJson)
+                        if (resultJson.result == 'success') {
                             this.getData()          // Reload the data
-                            elem.selectedIndex = 0  // Reset the dropdown to "Choose one..."
                         } else {
-                            alert(`Not successful: ${result}`)
+                            console.error(`Not successful: ${resultJson.msg}`)
+                            alert(`Not successful: ${resultJson.msg}`)
                         }
                     } else { // Missing ID or value
                         if (!id) {
@@ -283,7 +290,7 @@
                 reset(dd) { // Reset the option list to the first item
                     let x = document.getElementById(dd);
                     if (x) {
-                        console.log(x)
+                        error.log(x)
                         x.selectedIndex = 0
                     }
                 },
