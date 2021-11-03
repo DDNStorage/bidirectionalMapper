@@ -1,0 +1,319 @@
+<html>
+    <head>
+        <title v-html="Mapper"></title>
+    
+        <meta charset='utf-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+    
+        <link
+          href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css'
+          rel='stylesheet'
+          integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x'
+          crossorigin='anonymous'
+        />
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    </head>
+    <body>
+    <div id="links">
+        <div class="container-fluid mw-100">
+            <div class="row mw-100">
+                <div class="col col-6">
+                    <h2>Find Existing Links</h2>
+                    <div class="row">
+                        <div class="col">
+                            <h3>Bin A</h3>
+                            <select name="a" id="a" v-on:change="filter('A', $event)">
+                                <option value="Choose">Choose one...</option>
+                                <option v-for="aItem in this.a" :value="aItem.id">{{aItem.name}}</option>
+                            </select>
+                            <div v-if="aMatches.length"><div v-html="'<li>' + aMatches.join('\n<li>')"></div></div>
+                                <div v-else>None</div>
+                            </div>
+                            <div class="col">
+                                <h3>Bin B</h3>
+                                <select name="b" id="b" v-on:change="filter('B', $event)">
+                                    <option value="Choose">Choose one...</option>
+                                    <option v-for="bItem in this.b" :value="bItem.id">{{bItem.name}}</option>
+                            </select>
+                            <div v-if="bMatches.length"><div v-html="'<li>' + bMatches.join('\n<li>')"></div></div>
+                                <div v-else>None</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col-6">
+                    <h2>Current Links</h2>
+                    <table class="table table-responsive w-100">
+                        <thead>
+                            <tr>
+                                <!-- <th>A ID</th> -->
+                                <th>A Name</th>
+                                <!-- <th>B ID</th> -->
+                                <th>B Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in this.links">
+                                <!-- <td>{{row['a.id']}}</td> -->
+                                <td>{{row['a.name']}}</td>
+                                <!-- <td>{{row['b.id']}}</td> -->
+                                <td>{{row['b.name']}}</td>
+                                <td><a @click="removeLink(row['a.id'], row['b.id'])" ><i class="bi bi-x-square" style="color: red;"></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row mw-100 justify-content-center">
+                <div class="col col-6 p-3 border bg-light">
+                    <div class="container">
+                        <div class="row gy-5">
+                            <div class="col col-12">
+                                <h2>Add New Link</h2>
+                            </div>
+                        </div>
+                        <div class="row gy-5">
+                            <div class="col col-4" style="text-align: right;">
+                                <select name="addLinkA" id="addLinkA">
+                                    <option value="Choose">Choose one...</option>
+                                    <option v-for="aItem in this.a" :value="aItem.id">{{aItem.name}}</option>
+                                </select>
+                            </div>
+                            <div class="col col-4" style="text-align: center;">
+                                <button class="btn btn-sm btn-primary" @click="link()">Link</button>
+                            </div>
+                            <div class="col col-4" style="text-align: left;">
+                                <select name="addLinkB" id="addLinkB">
+                                    <option value="Choose">Choose one...</option>
+                                    <option v-for="bItem in this.b" :value="bItem.id">{{bItem.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col-6 p-3 border bg-light">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col col-12">
+                                <h2>Add New Entry</h2>
+                            </div>
+                        </div>
+                        <div class="row gy-5">
+                            <div class="col col-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="newBin" id="newBinA" value="a"></option>
+                                    <label for="newBinA">Bin A</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="newBin" id="newBinB" value="b"></option>
+                                    <label for="newBinB">Bin B</label>
+                                </div>
+                            </div>
+                            <div class="col col-4">
+                                <input type="text" name="newVal" id="newVal">
+                            </div>
+                            <div class="col col-4" style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" @click="add()">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mw-100 gy-10">
+                <div class="col col-6"></div>
+                <div class="col col-6 p-3 border bg-light">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col col-12">
+                                <h2>Delete Entry</h2>
+                            </div>
+                        </div>
+                        <div class="row gy-5">
+                            <div class="col col-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="delBin" id="delBinA" value="a" @change="rmBin = 'A'; reset('delA');"></option>
+                                    <label for="delBinA">Bin A</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="delBin" id="delBinB" value="b" @click="rmBin = 'B'; reset('delB');"></option>
+                                    <label for="delBinB">Bin B</label>
+                                </div>
+                            </div>
+                            <div class="col col-4">
+                                <span v-if="rmBin">
+                                    <span v-if="rmBin == 'A'">
+                                        <select name="delA" id="delA">
+                                            <option value="Choose">Choose one...</option>
+                                            <option v-for="aItem in this.a" :value="aItem.id">{{aItem.name}}</option>
+                                        </select>            
+                                    </span>
+                                    <span v-else>
+                                        <select name="delB" id="delB">
+                                            <option value="Choose">Choose one...</option>
+                                            <option v-for="bItem in this.b" :value="bItem.id">{{bItem.name}}</option>
+                                        </select>            
+                                        <!-- <input type="text" name="delVal" id="delVal"> -->
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="col col-4" style="text-align: center;">
+                                <button class="btn btn-sm btn-warning" @click="del()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      <em>{{ status }}</em>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script>
+        new Vue({
+            el: '#links',
+            data: {
+                pageTitle: 'Links',
+                status: 'loading',
+                links: {},
+                a: [],
+                b: [],
+                aMatches: [],
+                bMatches: [],
+                rmBin: false
+            },
+            created() {
+                this.getData()
+            },
+            methods: {
+                // Pull all the data - at app creation and refresh stale data
+                async getData() {
+                    let linkDataRaw = await fetch("/get/links")
+                    this.links = await linkDataRaw.json()
+
+                    let aDataRaw = await fetch("/get/bin/a")
+                    this.a = await aDataRaw.json()
+
+                    let bDataRaw = await fetch("/get/bin/b")
+                    this.b = await bDataRaw.json()
+
+                    this.status = "loaded"
+                },
+                async link() { // Create a link in the database
+                    // Get both values
+                    let valA = document.getElementById('addLinkA').value
+                    let valB = document.getElementById('addLinkB').value
+                    // Make sure the value isn't the default - i.e. the 1st dropdown entry
+                    if (valA !== "Choose" && valB !== "Choose") {
+                        let resultRaw = await fetch(`/add/link/${valA}/${valB}`)
+                        let resultJson = await resultRaw.json()
+                        // Make sure the call worked
+                        if (resultJson.result == 'success') {
+                            this.getData() // Reload the data
+                        } else {
+                            alert(`Error: ${resultJson.msg}`)
+                        }
+                    } else {
+                        alert('Insufficient input provided. Please select two values and try again.')
+                    }
+                },
+                async removeLink(a,b) { // Remove an existing link in the database
+                    let resultRaw = await fetch(`/remove/link/${a}/${b}`)
+                    let resultJson = await resultRaw.json()
+                    // Make sure the call worked
+                    if (resultJson.result !== 'success') {
+                        this.getData() // Reload the data
+                    } else {
+                        alert(`Not successful: ${result}`)
+                    }
+                },
+                async add() { // Add an element in the database
+                    // Make sure either A or B is selected
+                    let bin = document.getElementById('newBinA').checked ? 'A' : document.getElementById('newBinB').checked ? 'B' : false
+                    let val = document.getElementById('newVal').value
+                    // If a value was supplied and the Bin was selected...
+                    if (val.length && bin) {
+                        let resultRaw = await fetch(`/add/bin/${bin}/${val}`)
+                        let resultJson = await resultRaw.json()
+                        if (resultJson.result !== 'success') {
+                            this.getData() // Reload the data
+                        } else {
+                            alert(`Not successful: ${result}`)
+                        }
+                    } else { // Missing value OR missing bin
+                        if (!val) {
+                            alert('No value provided. Please fill in the new value and try again.')
+                        } else { // Must be missing Bin
+                            alert('No bin selected. Please select a bin and try again.')
+                        }
+                    }
+                },
+                async del() { // Remove an element in the database
+                    // Make sure a Bin was selected
+                    let bin = document.getElementById('delBinA').checked ? 'A' : document.getElementById('delBinB').checked ? 'B' : false
+                    let id     // database record ID
+                    let elem   // DOM element for the radio button
+                    if (bin == 'A') {
+                        elem = document.getElementById('delA')
+                        id = elem.value
+                    } else if (bin == 'B') {
+                        elem = document.getElementById('delB')
+                        id = elem.value
+                    } else { // Invalid Bin
+                        elem = false
+                        id = false
+                    }
+                    // Only proceed if both the Bin and record ID were provided
+                    if (id && bin) {
+                        let resultRaw = await fetch(`/remove/bin/${bin}/${id}`)
+                        let resultJson = await resultRaw.json()
+                        if (resultJson.result !== 'success') {
+                            this.getData()          // Reload the data
+                            elem.selectedIndex = 0  // Reset the dropdown to "Choose one..."
+                        } else {
+                            alert(`Not successful: ${result}`)
+                        }
+                    } else { // Missing ID or value
+                        if (!id) {
+                            alert('No value provided. Please fill in the new value and try again.')
+                        } else { // Must be missing bin
+                            alert('No bin selected. Please select a bin and try again.')
+                        }
+                    }
+                },
+                reset(dd) { // Reset the option list to the first item
+                    let x = document.getElementById(dd);
+                    if (x) {
+                        console.log(x)
+                        x.selectedIndex = 0
+                    }
+                },
+                filter(bin, event) { // Display only matching items from the other Bin
+                    // Using data in this.links - so don't have to pull from db each time
+                    this.aMatches = []
+                    this.bMatches = []
+                    var xName = event.target.options[event.target.options.selectedIndex].text
+                    if (xName !== "Choose one...") { // Make sure it isn't the default item
+                        if (bin == 'A') {
+                            this.links.forEach((link) => {
+                                if (link['a.name'] == xName) {
+                                    this.aMatches.push(link['b.name'])
+                                }
+                            })
+                            let bList = document.getElementById('b')
+                            bList.selectedIndex = 0
+                        } else {
+                            this.links.forEach((link) => {
+                                if (link['b.name'] == xName) {
+                                    this.bMatches.push(link['a.name'])
+                                }
+                            })
+                            let aList = document.getElementById('a')
+                            aList.selectedIndex = 0
+                        }
+                    }
+                }
+            }
+        })
+    </script>
+  </body>
+</html>
